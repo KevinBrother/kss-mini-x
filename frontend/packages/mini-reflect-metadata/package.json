@@ -1,0 +1,32 @@
+{
+  "name": "mini-reflect-metadata",
+  "version": "0.0.0",
+  "description": "mini-reflect-metadata",
+  "author": "caojunjie <1301239018@qq.com>",
+  "homepage": "https://github.com/Kevinbrother/kss-mini-x#readme",
+  "license": "ISC",
+  "main": "lib/mini-reflect-metadata.js",
+  "directories": {
+    "lib": "lib",
+    "test": "__tests__"
+  },
+  "files": [
+    "lib"
+  ],
+  "publishConfig": {
+    "registry": "https://registry.npmmirror.com/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Kevinbrother/kss-mini-x.git"
+  },
+  "scripts": {
+    "test": "node ./__tests__/mini-reflect-metadata.test.js"
+  },
+  "bugs": {
+    "url": "https://github.com/Kevinbrother/kss-mini-x/issues"
+  },
+  "dependencies": {
+    "reflect-metadata": "^0.2.2"
+  }
+}

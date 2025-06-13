@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>React 脚本引入示例</title>
+    <!-- 引入 Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入 Font Awesome -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css"
+      rel="stylesheet"
+    />
+
+    <!-- 配置 Tailwind 自定义颜色 -->
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: "#3B82F6",
+              secondary: "#10B981",
+              accent: "#8B5CF6",
+            },
+          },
+        },
+      };
+    </script>
+
+    <!-- 自定义工具类 -->
+    <style type="text/tailwindcss">
+      @layer utilities {
+        .content-auto {
+          content-visibility: auto;
+        }
+        .card-shadow {
+          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+            0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+      }
+    </style>
+  </head>
+  <body class="bg-gray-50 font-sans">
+    <!-- React 渲染容器 -->
+    <div id="root" class="max-w-6xl mx-auto px-4 py-8"></div>
+
+    <!-- 引入 React 和 ReactDOM -->
+    <script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.development.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.development.js"></script>
+
+    <!-- Babel 编译器，用于转换 JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- 应用代码 -->
+    <script type="text/babel">
+      // 定义任务列表组件
+      function TaskList() {
+        const [tasks, setTasks] = React.useState([
+          { id: 1, text: "学习 React 基础", completed: true },
+          { id: 2, text: "构建简单应用", completed: false },
+          { id: 3, text: "部署到生产环境", completed: false },
+        ]);
+
+        const [newTask, setNewTask] = React.useState("");
+
+        // 处理任务状态切换
+        const toggleTask = (id) => {
+          setTasks((prevTasks) =>
+            prevTasks.map((task) =>
+              task.id === id ? { ...task, completed: !task.completed } : task
+            )
+          );
+        };
+
+        // 添加新任务
+        const addTask = () => {
+          if (newTask.trim()) {
+            setTasks((prevTasks) => [
+              ...prevTasks,
+              { id: Date.now(), text: newTask, completed: false },
+            ]);
+            setNewTask("");
+          }
+        };
+
+        // 删除任务
+        const deleteTask = (id) => {
+          setTasks((prevTasks) => prevTasks.filter((task) => task.id !== id));
+        };
+
+        return (
+          <div className="max-w-2xl mx-auto bg-white rounded-xl shadow-lg overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <h1 className="text-2xl font-bold text-gray-900">任务管理</h1>
+              <p className="text-gray-500 mt-1">
+                完成了{" "}
+                <span className="font-medium text-primary">
+                  {tasks.filter((t) => t.completed).length}
+                </span>
+                个任务，还剩{" "}
+                <span className="font-medium text-secondary">
+                  {tasks.filter((t) => !t.completed).length}
+                </span>{" "}
+                个
+              </p>
+            </div>
+
+            <div className="px-6 py-4">
+              <div className="flex space-x-2 mb-6">
+                <input
+                  type="text"
+                  value={newTask}
+                  onChange={(e) => setNewTask(e.target.value)}
+                  placeholder="添加新任务..."
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition duration-200"
+                />
+                <button
+                  onClick={addTask}
+                  className="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg transition duration-200 flex items-center"
+                >
+                  <i className="fa fa-plus mr-2"></i>添加
+                </button>
+              </div>
+
+              <ul className="space-y-3">
+                {tasks.map((task) => (
+                  <li
+                    key={task.id}
+                    className={`flex items-center p-3 rounded-lg ${
+                      task.completed ? "bg-gray-50" : "bg-white"
+                    } border border-gray-200 transition duration-200 hover:border-primary/50`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={task.completed}
+                      onChange={() => toggleTask(task.id)}
+                      className="h-5 w-5 text-primary rounded border-gray-300 focus:ring-primary cursor-pointer"
+                    />
+                    <span
+                      className={`ml-3 flex-1 ${
+                        task.completed
+                          ? "line-through text-gray-400"
+                          : "text-gray-700"
+                      }`}
+                    >
+                      {task.text}
+                    </span>
+                    <button
+                      onClick={() => deleteTask(task.id)}
+                      className="text-gray-400 hover:text-red-500 transition duration-200"
+                    >
+                      <i className="fa fa-trash"></i>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        );
+      }
+
+      // 渲染应用
+      ReactDOM.createRoot(document.getElementById("root")).render(<TaskList />);
+    </script>
+  </body>
+</html>

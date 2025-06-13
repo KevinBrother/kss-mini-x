@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>React 脚本引入示例</title>
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.development.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <script type="text/babel">
+      const { useState, useDeferredValue, useEffect } = React;
+      /*       function App() {
+        const len = 300000;
+        return (
+          <ul>
+            {Array(len)
+              .fill(0)
+              .map((_, i) => (
+                <li>{i}</li>
+              ))}
+          </ul>
+        );
+      } */
+
+      const App = () => {
+        const [list, setList] = useState([]);
+        useEffect(() => {
+          setList(new Array(10000).fill(null));
+        }, []);
+        // 使用了并发特性，开启并发更新
+        // const deferredList = useDeferredValue(list);
+        return (
+          <>
+            {list.map((_, i) => (
+              <div key={i}>{i}</div>
+            ))}
+          </>
+        );
+      };
+
+      ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+    </script>
+  </body>
+</html>

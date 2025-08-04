@@ -9,6 +9,7 @@
 - [ ] mini-npm
 - [ ] mini-webpack
 - [ ] mini-electron-builder
+- [ ] mini-vscode
 
 ### Computer Science
 

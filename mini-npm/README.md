@@ -4,12 +4,12 @@
 
 - 增删改查 npm 包
 -
-- [ ] publish
-- [ ] install
-- [ ] uninstall
-- [ ] update
-- [ ] ls
-- [ ] 增加缓存功能
+- [x] publish
+- [x] install
+- [x] uninstall
+- [x] update
+- [x] ls
+- [x] 增加缓存功能
 
 ## 使用
 

@@ -364,6 +364,7 @@ program
 // 安装命令
 program
   .command("install <package> [version]")
+  .alias("i")
   .description("安装包")
   .action(installPackage);
 

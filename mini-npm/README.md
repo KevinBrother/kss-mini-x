@@ -3,13 +3,12 @@
 ## 项目介绍
 
 - 增删改查 npm 包
--
 - [x] publish
 - [x] install
 - [x] uninstall
 - [x] update
 - [x] ls
-- [x] 增加缓存功能
+- [ ] 增加缓存功能
 
 ## 使用
 

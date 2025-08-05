@@ -1,0 +1,51 @@
+sequenceDiagram
+    participant User
+    participant NPMAgent as npm客户端
+    participant PackageJSON as package.json
+    participant Cache as 本地缓存
+    participant Registry as npm仓库(registry)
+    participant FileSystem as 文件系统(node_modules)
+
+    User->>NPMAgent: 执行命令<br>`npm install <package>[@version]`
+    NPMAgent->>PackageJSON: 读取项目依赖配置
+    Note over NPMAgent: 解析目标包名和版本范围<br>（如未指定版本，默认latest）
+    
+    %% 步骤1：检查本地缓存
+    NPMAgent->>Cache: 查询缓存<br>（包名+版本+integrity校验）
+    alt 缓存命中且校验通过
+        Cache-->>NPMAgent: 返回缓存的.tgz包
+        Note over NPMAgent: 跳过下载，直接使用缓存
+    else 缓存未命中/校验失败
+        %% 步骤2：从远程仓库获取包信息
+        NPMAgent->>Registry: 请求包元数据<br>（GET /<package>）
+        Registry-->>NPMAgent: 返回包信息<br>（包含所有版本、dist-tags等）
+        
+        %% 步骤3：确定具体版本
+        Note over NPMAgent: 根据版本范围筛选版本<br>（如^1.0.0匹配1.2.3）
+        NPMAgent->>Registry: 请求目标版本的tar包<br>（GET /<package>/-/<package>-x.y.z.tgz）
+        Registry-->>NPMAgent: 返回.tgz包数据流
+        
+        %% 步骤4：写入缓存
+        NPMAgent->>Cache: 保存.tgz包到缓存目录<br>（记录integrity和版本）
+        Cache-->>NPMAgent: 缓存完成
+    end
+    
+    %% 步骤5：解压安装到node_modules
+    NPMAgent->>FileSystem: 创建目标目录<br>（node_modules/<package>）
+    NPMAgent->>FileSystem: 解压.tgz包到目录<br>（strip 1级目录）
+    FileSystem-->>NPMAgent: 解压完成
+    
+    %% 步骤6：处理依赖树
+    NPMAgent->>FileSystem: 读取安装包的package.json
+    FileSystem-->>NPMAgent: 返回包的dependencies
+    alt 存在子依赖
+        Note over NPMAgent: 递归执行安装流程<br>（对每个子依赖重复上述步骤）
+        NPMAgent->>NPMAgent: 处理依赖树扁平化<br>（避免重复安装）
+    end
+    
+    %% 步骤7：更新配置文件
+    NPMAgent->>PackageJSON: 更新dependencies字段<br>（写入安装的版本范围）
+    NPMAgent->>FileSystem: 生成/更新package-lock.json<br>（记录精确版本和integrity）
+    
+    %% 完成安装
+    NPMAgent-->>User: 输出安装结果<br>（如"added 1 package in Xs"）

@@ -1,0 +1,30 @@
+{
+  "name": "mini-webpack",
+  "version": "1.0.0",
+  "description": "一个简化版的webpack实现，包含核心功能",
+  "main": "mini-webpack.js",
+  "bin": {
+    "mini-webpack": "./mini-webpack.js"
+  },
+  "scripts": {
+    "build": "node mini-webpack.js",
+    "start": "node server.js",
+    "webpack:build": "webpack",
+    "webpack:start": "webpack serve"
+  },
+  "keywords": [
+    "webpack",
+    "bundler",
+    "mini-webpack"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "webpack": "^5.101.0"
+  },
+  "devDependencies": {
+    "copy-webpack-plugin": "^13.0.0",
+    "webpack-cli": "^6.0.1",
+    "webpack-dev-server": "^5.2.2"
+  }
+}

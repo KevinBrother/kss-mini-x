@@ -20,6 +20,7 @@
 mini-webpack/
 ├── lib/                      # 核心库
 │   ├── compiler.js           # 编译器（核心调度者）
+│   ├── compilation.js        # 编译过程管理器
 │   ├── dependency-graph.js   # 依赖图谱构建器
 │   ├── hooks.js              # 钩子系统
 │   ├── loader-runner.js      # Loader运行器
@@ -27,7 +28,8 @@ mini-webpack/
 ├── loaders/                  # 示例loader
 │   └── css-loader.js         # CSS处理loader
 ├── plugins/                  # 示例插件
-│   └── my-plugin.js          # 自定义插件
+│   ├── my-plugin.js          # 自定义插件
+│   └── copy-webpack-plugin.js # 文件复制插件
 ├── src/                      # 示例项目源码
 │   ├── index.js              # 入口文件
 │   ├── style.css             # 样式文件
@@ -115,16 +117,33 @@ function cssLoader(source) {
 module.exports = cssLoader;
 ```
 
-## 工作流程
+## 架构设计
 
-1. 初始化：读取配置
-2. 插件注册：调用所有插件的apply方法，注册钩子回调
-3. 触发beforeRun钩子：通知插件即将开始打包
-4. 构建依赖图谱：从入口文件开始，解析每个模块的路径，对非JS模块执行loader转换，提取依赖，递归解析
-5. 触发afterCompile钩子：通知插件模块解析完成
-6. 打包生成bundle：将所有模块包装并合并为一个JS文件
-7. 写入输出文件：按output配置写入磁盘
-8. 触发done钩子：通知插件打包完成
+### 核心组件
+
+1. **Compiler**：整个打包过程的核心调度者，负责初始化配置、应用插件、触发各个生命周期钩子，以及管理整个打包流程。
+
+2. **Compilation**：单次编译过程的管理者，负责模块编译、依赖收集和资源生成。将编译过程从Compiler中分离，使架构更加清晰，职责更加单一。
+
+3. **ModuleResolver**：模块解析器，负责将模块引用路径解析为实际文件路径。
+
+4. **DependencyGraph**：依赖图谱构建器，负责从入口文件开始递归解析所有模块依赖，构建完整的依赖关系图。
+
+5. **Hooks**：钩子系统，提供插件注册和触发机制，允许插件介入打包流程的各个阶段。
+
+6. **Loaders**：加载器系统，负责将非JavaScript文件转换为可执行的JavaScript模块。
+
+### 工作流程
+
+1. **初始化**：读取配置文件，创建Compiler实例
+2. **插件注册**：调用所有插件的apply方法，注册钩子回调
+3. **触发beforeRun钩子**：通知插件即将开始打包
+4. **创建Compilation**：Compiler创建Compilation实例，委托其执行编译过程
+5. **构建依赖图谱**：Compilation使用DependencyGraph从入口文件开始，解析每个模块的路径，对非JS模块执行loader转换，提取依赖，递归解析
+6. **生成资源**：Compilation将模块打包为资源，如bundle.js
+7. **触发afterCompile钩子**：通知插件模块解析完成
+8. **写入输出文件**：Compiler将生成的资源写入磁盘
+9. **触发done钩子**：通知插件打包完成
 
 ## 局限性
 

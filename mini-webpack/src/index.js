@@ -1,10 +1,7 @@
 // 入口文件
-import './style.css';
+import "./style.css";
+import { sayHello } from "./utils";
 
-const greeting = 'Hello from mini-webpack!';
-console.log(greeting);
+const greeting = "This is from mini-webpack!";
 
-// 导出一个函数
-export function sayHello() {
-  console.log('Hello, world!');
-}
+sayHello(greeting);

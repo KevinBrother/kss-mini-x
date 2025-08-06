@@ -6,7 +6,7 @@ const fs = require('fs');
 const path = require('path');
 const { SyncHook } = require('./hooks');
 const ModuleResolver = require('./module-resolver');
-const DependencyGraph = require('./dependency-graph');
+const Compilation = require('./compilation');
 
 class Compiler {
   /**
@@ -23,6 +23,8 @@ class Compiler {
       afterCompile: new SyncHook(),
       done: new SyncHook()
     };
+
+     this.hooks.thisCompilation = new SyncHook();
     
     // 初始化模块解析器
     this.resolver = new ModuleResolver({
@@ -53,114 +55,58 @@ class Compiler {
     // 触发beforeRun钩子
     this.hooks.beforeRun.call();
     
-    // 构建依赖图谱
-    const dependencyGraph = new DependencyGraph({
+    // 创建compilation实例
+    const compilation = new Compilation({
+      config: this.config,
       resolver: this.resolver,
-      loaders: this.config.module
+      hooks: this.hooks,
+      context: this.context
     });
+
+
     
-    const entryPath = path.resolve(this.context, this.config.entry);
-    const modules = dependencyGraph.buildGraph(entryPath);
+    // 执行编译
+    const { modules, assets } = compilation.compile();
     
     // 触发afterCompile钩子
     this.hooks.afterCompile.call(modules);
     
-    // 生成bundle
-    const bundle = this.generateBundle(modules);
-    
     // 写入输出文件
-    this.emitFile(bundle);
+    this.emitAssets(assets);
     
     // 触发done钩子
     this.hooks.done.call();
     
     return {
       modules,
-      bundle
+      assets
     };
   }
 
   /**
-   * 生成bundle
-   * @param {Object} modules - 依赖图谱
-   * @returns {string} - bundle代码
+   * 写入资源到输出目录
+   * @param {Object} assets - 资源对象
    */
-  generateBundle(modules) {
-    let modulesCode = '';
-    
-    // 生成模块代码
-    for (const id in modules) {
-      const { code, dependencies } = modules[id];
-      
-      // 将依赖路径转换为模块ID
-      const depsCode = JSON.stringify(dependencies);
-      
-      // 包装模块代码
-      modulesCode += `${id}: [function(require, module, exports) {\n${code}\n}, ${depsCode}],\n`;
-    }
-    
-    // 生成完整的bundle代码
-    return `
-(function(modules) {
-  // 模块缓存
-  var installedModules = {};
-  
-  // 实现require函数
-  function require(moduleId) {
-    // 检查模块是否在缓存中
-    if (installedModules[moduleId]) {
-      return installedModules[moduleId].exports;
-    }
-    
-    // 创建新模块并放入缓存
-    var module = installedModules[moduleId] = {
-      id: moduleId,
-      loaded: false,
-      exports: {}
-    };
-    
-    // 执行模块函数
-    var moduleFunction = modules[moduleId][0];
-    var dependencies = modules[moduleId][1];
-    
-    // 创建require函数的本地版本
-    function localRequire(relativePath) {
-      return require(dependencies[relativePath]);
-    }
-    
-    // 调用模块函数
-    moduleFunction(localRequire, module, module.exports);
-    
-    // 标记模块为已加载
-    module.loaded = true;
-    
-    // 返回模块的导出
-    return module.exports;
-  }
-  
-  // 加载入口模块并返回导出
-  return require('0');
-})({\n${modulesCode}});
-`;
-  }
-
-  /**
-   * 写入输出文件
-   * @param {string} content - 文件内容
-   */
-  emitFile(content) {
+  emitAssets(assets) {
     const outputPath = path.resolve(this.context, this.config.output.path);
-    const outputFile = path.join(outputPath, this.config.output.filename);
     
     // 确保输出目录存在
     if (!fs.existsSync(outputPath)) {
       fs.mkdirSync(outputPath, { recursive: true });
     }
     
-    // 写入文件
-    fs.writeFileSync(outputFile, content);
-    console.log(`Bundle已生成: ${outputFile}`);
+    // 写入所有资源文件
+    for (const filename in assets) {
+      const asset = assets[filename];
+      const filePath = path.join(outputPath, filename);
+      const content = asset.source();
+      
+      fs.writeFileSync(filePath, content);
+      console.log(`资源已生成: ${filePath} (${asset.size()} 字节)`);
+    }
   }
+
+
 }
 
 module.exports = Compiler;

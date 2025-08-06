@@ -1,13 +1,14 @@
 // webpack配置文件
 const path = require("path");
 const MyPlugin = require("./plugins/my-plugin");
+// const CopyWebpackPlugin = require("./plugins/copy-webpack-plugin");
 const CopyWebpackPlugin = require("copy-webpack-plugin");
 
 module.exports = {
   entry: "./src/index.js",
   output: {
     path: path.resolve(__dirname, "dist"),
-    filename: "bundle.js",
+    filename: "kss-bundle.js",
   },
   module: {
     rules: [

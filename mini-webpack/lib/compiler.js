@@ -21,11 +21,10 @@ class Compiler {
     this.hooks = {
       beforeRun: new SyncHook(),
       afterCompile: new SyncHook(),
-      done: new SyncHook()
+      done: new SyncHook(),
+      thisCompilation: new SyncHook()
     };
 
-     this.hooks.thisCompilation = new SyncHook();
-    
     // 初始化模块解析器
     this.resolver = new ModuleResolver({
       extensions: ['.js', '.json', '.css']
